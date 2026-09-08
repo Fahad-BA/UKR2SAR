@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A simple Ukrainian Hryvnia to Saudi Riyal converter.">
+  <title>UAH to SAR</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="converter" aria-labelledby="title">
+    <header class="header">
+      <p class="eyebrow">Currency converter</p>
+      <h1 id="title">UAH <span aria-hidden="true">↔</span> SAR</h1>
+      <p class="subtitle">Ukrainian Hryvnia to Saudi Riyal</p>
+    </header>
+
+    <form class="converter-form" novalidate>
+      <label class="currency-field" for="uah">
+        <span class="currency-label"><span class="flag" aria-hidden="true">🇺🇦</span> Ukrainian Hryvnia <small>UAH</small></span>
+        <span class="input-wrap"><span class="currency-symbol" aria-hidden="true">₴</span><input id="uah" name="uah" type="number" inputmode="decimal" min="0" step="any" placeholder="0" autocomplete="off"></span>
+      </label>
+
+      <div class="swap" aria-hidden="true">⇅</div>
+
+      <label class="currency-field" for="sar">
+        <span class="currency-label"><span class="flag" aria-hidden="true">🇸🇦</span> Saudi Riyal <small>SAR</small></span>
+        <span class="input-wrap"><span class="currency-symbol" aria-hidden="true">⃁</span><input id="sar" name="sar" type="number" inputmode="decimal" min="0" step="any" placeholder="0" autocomplete="off"></span>
+      </label>
+    </form>
+
+    <p class="rate">1 UAH = 0.08376 SAR</p>
+  </main>
+</body>
+</html>
