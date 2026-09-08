@@ -1,24 +1,28 @@
 const RATE = 0.08376;
 const uahInput = document.querySelector('#uah');
 const sarInput = document.querySelector('#sar');
+const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
 
 function normalizeInput(value) {
-  const normalized = Array.from(value, (character) => {
-    const code = character.codePointAt(0);
+  let normalized = '';
 
-    if (code >= 0x0660 && code <= 0x0669) return String(code - 0x0660);
-    if (code >= 0x06f0 && code <= 0x06f9) return String(code - 0x06f0);
-    if (character === '،' || character === '٫' || character === ',') return '.';
-    if (character === '٬') return '';
-    return character;
-  }).join('');
+  for (const character of value) {
+    const arabicIndex = arabicDigits.indexOf(character);
+    const persianIndex = persianDigits.indexOf(character);
 
-  const numeric = normalized.replace(/[^0-9.]/g, '');
-  const firstDot = numeric.indexOf('.');
+    if (arabicIndex !== -1) normalized += String(arabicIndex);
+    else if (persianIndex !== -1) normalized += String(persianIndex);
+    else if (character === '٫' || character === '،' || character === ',') normalized += '.';
+    else if (character !== '٬') normalized += character;
+  }
+
+  normalized = normalized.replace(/[^0-9.]/g, '');
+  const firstDot = normalized.indexOf('.');
 
   return firstDot === -1
-    ? numeric
-    : numeric.slice(0, firstDot + 1) + numeric.slice(firstDot + 1).replace(/\./g, '');
+    ? normalized
+    : normalized.slice(0, firstDot + 1) + normalized.slice(firstDot + 1).replace(/\./g, '');
 }
 
 function format(value) {
@@ -27,8 +31,17 @@ function format(value) {
 }
 
 function convert(source, target, multiplier) {
-  const normalized = normalizeInput(source.value);
-  source.value = normalized;
+  const original = source.value;
+  const normalized = normalizeInput(original);
+
+  if (original !== normalized) {
+    const caret = source.selectionStart;
+    source.value = normalized;
+    if (caret !== null) {
+      const newCaret = normalizeInput(original.slice(0, caret)).length;
+      source.setSelectionRange(newCaret, newCaret);
+    }
+  }
 
   if (normalized === '') {
     target.value = '';
@@ -46,7 +59,12 @@ function handleInput(event) {
   convert(source, target, multiplier);
 }
 
-[uahInput, sarInput].forEach((input) => {
+function bindInput(input) {
   input.addEventListener('input', handleInput);
+  input.addEventListener('keyup', handleInput);
   input.addEventListener('change', handleInput);
-});
+  input.addEventListener('paste', () => setTimeout(() => handleInput({ currentTarget: input }), 0));
+}
+
+bindInput(uahInput);
+bindInput(sarInput);
