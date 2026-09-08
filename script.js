@@ -3,14 +3,22 @@ const uahInput = document.querySelector('#uah');
 const sarInput = document.querySelector('#sar');
 
 function normalizeInput(value) {
-  const eastern = '٠١٢٣٤٥٦٧٨٩';
-  const persian = '۰۱۲۳۴۵۶۷۸۹';
+  const normalized = Array.from(value, (character) => {
+    const code = character.codePointAt(0);
 
-  return value
-    .replace(/[٠-٩]/g, (digit) => eastern.indexOf(digit))
-    .replace(/[۰-۹]/g, (digit) => persian.indexOf(digit))
-    .replace(/[٬]/g, '')
-    .replace(/[،٫]/g, '.');
+    if (code >= 0x0660 && code <= 0x0669) return String(code - 0x0660);
+    if (code >= 0x06f0 && code <= 0x06f9) return String(code - 0x06f0);
+    if (character === '،' || character === '٫' || character === ',') return '.';
+    if (character === '٬') return '';
+    return character;
+  }).join('');
+
+  const numeric = normalized.replace(/[^0-9.]/g, '');
+  const firstDot = numeric.indexOf('.');
+
+  return firstDot === -1
+    ? numeric
+    : numeric.slice(0, firstDot + 1) + numeric.slice(firstDot + 1).replace(/\./g, '');
 }
 
 function format(value) {
@@ -19,16 +27,26 @@ function format(value) {
 }
 
 function convert(source, target, multiplier) {
-  source.value = normalizeInput(source.value);
+  const normalized = normalizeInput(source.value);
+  source.value = normalized;
 
-  if (source.value.trim() === '') {
+  if (normalized === '') {
     target.value = '';
     return;
   }
 
-  const value = Number.parseFloat(source.value);
-  target.value = Number.isFinite(value) ? format(value * multiplier) : '';
+  const value = Number.parseFloat(normalized);
+  target.value = Number.isNaN(value) ? '' : format(value * multiplier);
 }
 
-uahInput.addEventListener('input', () => convert(uahInput, sarInput, RATE));
-sarInput.addEventListener('input', () => convert(sarInput, uahInput, 1 / RATE));
+function handleInput(event) {
+  const source = event.currentTarget;
+  const target = source === uahInput ? sarInput : uahInput;
+  const multiplier = source === uahInput ? RATE : 1 / RATE;
+  convert(source, target, multiplier);
+}
+
+[uahInput, sarInput].forEach((input) => {
+  input.addEventListener('input', handleInput);
+  input.addEventListener('change', handleInput);
+});
